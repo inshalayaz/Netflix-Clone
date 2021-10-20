@@ -2,6 +2,8 @@
 import { Router } from "express";
 import User from "../models/Users.mjs";
 import CryptoJs from "crypto-js";
+import jwt from "jsonwebtoken";
+
 const router = Router();
 
 const { AES } = CryptoJs;
@@ -24,7 +26,7 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { email } = req.body;
 
   try {
     const user = await User.findOne({ email: email });
@@ -34,10 +36,18 @@ router.post("/login", async (req, res) => {
     var bytes = CryptoJs.AES.decrypt(user.password, process.env.SECRET_KEY);
     var originalText = bytes.toString(CryptoJs.enc.Utf8);
 
-    originalText !== password &&
+    originalText !== req.body.password &&
       res.status(410).json("Wrong Email Or Password");
 
-    res.status(200).json(user);
+    const accessToken = jwt.sign(
+      { id: user._id, isAdmin: user.isAdmin },
+      process.env.SECRET_KEY,
+      { expiresIn: "5d" }
+    );
+
+    const { password, ...info } = user._doc;
+
+    res.status(200).json({ ...info, accessToken });
   } catch (error) {
     // console.log(error);
     res.status(500).json(error);
