@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import authRoute from "./routes/auth.mjs";
+import userRoute from "./routes/users.mjs";
 
 dotenv.config();
 const app = express();
@@ -20,6 +21,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 
 app.use("/api/auth", authRoute);
+app.use("/api/user", userRoute);
 
 app.listen(3001, () => {
   console.log("Backend server is running!");
